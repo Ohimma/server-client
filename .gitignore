@@ -1,0 +1,9 @@
+*.yaml
+server
+aa
+aa.*
+*.py
+
+.vscode
+.git
+
