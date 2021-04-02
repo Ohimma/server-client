@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Ohimma/server-client/http/client/controller"
+	// "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // func main() {
@@ -29,14 +31,16 @@ import (
 
 // }
 
+var addr = flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
+
 func main() {
 	// 指定定时器的时间间隔是 1s
 
-	stopChan := make(chan os.Signal)
-	signal.Notify(stopChan, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT)
-
 	go controller.Health1()
 
+	// 阻塞方式一
+	stopChan := make(chan os.Signal)
+	signal.Notify(stopChan, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT)
 	<-stopChan
 	close(stopChan)
 	time.Sleep(5000 * time.Millisecond)
@@ -45,6 +49,10 @@ func main() {
 	// var wg sync.WaitGroup
 	// wg.Add(1)
 	// wg.Wait()
+
+	// flag.Parse()
+	// http.Handle("/metrics", promhttp.Handler())
+	// log.Fatal(http.ListenAndServe(*addr, nil))
 
 	fmt.Println("stop server")
 
