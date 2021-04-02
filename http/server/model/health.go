@@ -16,10 +16,28 @@ type Health struct {
 	DeleteAt string `json:"delete_at" gorm:"default: null; comment:value不为空时表示删除"`
 }
 
-func HealthCreate(db *Health) error {
+func ExitsHealth(host string) (*Health, int64, error) {
+	Info := &Health{}
+	sql := DB.Where("host = ? ", host)
+	result := sql.Find(&Info)
+
+	middleware.Logger.Info("AuthExits result = ", sql, Info, result.RowsAffected, result.Error)
+	return Info, result.RowsAffected, result.Error
+}
+
+func CreateHealth(db *Health) (*Health, int64, error) {
 	db.CreateAt = time.Now().Format("2006-01-02 15:04:05")
 	result := DB.Create(&db)
 
 	middleware.Logger.Info("CreateUsername = ", *db, result.RowsAffected, result.Error)
-	return result.Error
+	return db, result.RowsAffected, result.Error
+}
+
+func UpdateHealth(db *Health) (*Health, int64, error) {
+	db.UpdateAt = time.Now().Format("2006-01-02 15:04:05")
+	sql := DB.Where("id = ? ", db.Id)
+	result := sql.Updates(&db)
+
+	middleware.Logger.Info("UpdateAuth = ", *db, result, result.Error)
+	return db, result.RowsAffected, result.Error
 }

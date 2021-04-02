@@ -1,19 +1,16 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/Ohimma/server-client/http/client/config"
+	"github.com/Ohimma/server-client/http/client/controller"
 )
 
 // func main() {
-
 // 	// 引入配置
 // 	fmt.Print("conf = ", config.Conf.Server.Host)
 // 	// 原始 url
@@ -22,7 +19,6 @@ import (
 // 	router := httprouter.New()
 // 	router.GET("/", Index)
 // 	router.GET("/hello/:name", Hello)
-
 // 	fmt.Println("服务器开始启动")
 // 	log.Fatal(http.ListenAndServe(":8080", router))
 // 	// err := http.ListenAndServe("0.0.0.0:8080", nil)
@@ -33,53 +29,25 @@ import (
 
 // }
 
-func Get(url string) {
-	// resp, err := http.Get(url)
-	// 要管理客户端的头部等，则建一个client实例，否则可直接get
-	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Get(url)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	fmt.Println(resp)
-}
-
-// 发送POST请求
-// url：         请求地址
-// data：        POST请求提交的数据
-// contentType： 请求体格式，如：application/json
-// content：     请求放回的内容
-func Post(url string, data interface{}, contentType string) string {
-
-	// 超时时间：5秒
-	client := &http.Client{Timeout: 5 * time.Second}
-	jsonStr, _ := json.Marshal(data)
-	resp, err := client.Post(url, contentType, bytes.NewBuffer(jsonStr))
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	result, _ := ioutil.ReadAll(resp.Body)
-	return string(result)
-}
-
-func runServer() {
-	fmt.Println("prometheus runServer")
-}
-
 func main() {
-	i := 1
-	for {
-		url := "http://" + config.Conf.Server.Host + "/test/health"
-		log.Info(url)
-		fmt.Println(i, "xxxx", url)
-		Get(url)
+	// 指定定时器的时间间隔是 1s
 
-		time.Sleep(1 * time.Second)
-		i++
-	}
+	stopChan := make(chan os.Signal)
+	signal.Notify(stopChan, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT)
+
+	go controller.Health1()
+
+	<-stopChan
+	close(stopChan)
+	time.Sleep(5000 * time.Millisecond)
+
+	// 阻塞进程方式二
+	// var wg sync.WaitGroup
+	// wg.Add(1)
+	// wg.Wait()
+
+	fmt.Println("stop server")
+
 }
 
 // func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
