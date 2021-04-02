@@ -19,7 +19,7 @@ func Health1() {
 		log.Println("Tick at", time) //每取一次，这里隔一秒会执行一次
 		SendHealth2()
 	}
-	t.Stop() //停止该定时器
+	t.Stop()
 	log.Println("停止该定时器")
 }
 
